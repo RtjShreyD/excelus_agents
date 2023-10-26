@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import redis
+import pika
 import uvicorn
 
 app = FastAPI()
@@ -71,6 +72,3 @@ async def close_resources():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
-
-
-# run - uvicorn main:app --reload --port 8001
