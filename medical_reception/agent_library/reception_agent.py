@@ -8,6 +8,8 @@ from langchain.agents import initialize_agent, Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory, ConversationBufferWindowMemory
 from datetime import datetime, timedelta
 
+from langchain.memory.chat_message_histories.redis import RedisChatMessageHistory
+
 import re
 import json
 import random
@@ -204,7 +206,15 @@ Begin!
 #     return_messages=True
 # )
 
-memory= ConversationBufferMemory(memory_key="chat_history")
+chat_history = RedisChatMessageHistory(
+    url="redis://localhost:6379/0", 
+    ttl=600, 
+    session_id="aadhekhezara"
+)
+memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=chat_history)
+
+
+# memory= ConversationBufferMemory(memory_key="chat_history")
 conversational_agent_chain = initialize_agent(
     tools, 
     llm, 
@@ -217,7 +227,15 @@ conversational_agent_chain = initialize_agent(
 print(conversational_agent_chain.run(CONVERSATIONAL_AGENT_PROMPT))
 
 while True:
-    human_input = str(input("Human :"))
-    resp = conversational_agent_chain.run(human_input)
+    human_input = str(input("Human: "))
+    
+    # Read chat history from Redis and include in agent.run
+    updated_history = chat_history.messages
+    
+    resp = conversational_agent_chain.run(input=human_input, chat_history=updated_history)
     print(resp)
+    print("\n================================")
+    
+    # Update chat history in Redis
+    chat_history.add_ai_message(resp) 
     print("\n================================")
