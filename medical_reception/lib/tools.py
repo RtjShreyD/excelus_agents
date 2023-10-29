@@ -44,6 +44,7 @@ def create_toolkit():
                     description=description,
                 )
             )
+            print(f"Added tool - {name}")
     else:
         print("No embedding tool configured")
 
@@ -68,6 +69,7 @@ def create_toolkit():
                         description=description
                     )
                 )
+                print(f"Added tool - {name}")
             else:
                 print("Unknown function from custom_tools_module")
     else:
