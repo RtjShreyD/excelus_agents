@@ -32,6 +32,8 @@ def load_env_config():
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
     envs = {
+        "AUTH_SECRET_KEY": os.getenv('AUTH_SECRET_KEY'),
+        "AUTH_ALGORITHM" : os.getenv('AUTH_ALGORITHM'),
         "OPENAI_API_KEY" : os.getenv('OPENAI_API_KEY'),
         "CELERY_BROKER_URL" : os.getenv('CELERY_BROKER_URL'),
         "CELERY_RESULT_BACKEND" : os.getenv('CELERY_RESULT_BACKEND'),

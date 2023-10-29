@@ -1,12 +1,30 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request, Depends, HTTPException, status
 from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
+from fastapi.security import HTTPBearer
+from jose import JWTError, jwt
 from lib.agent import MedicalReceptionAgent
+from configs.config import envs
 import uuid
 import uvicorn
 
 app = FastAPI()
+bearer_scheme = HTTPBearer()
 agent_instance = MedicalReceptionAgent()
+
+def decode_jwt_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, envs['AUTH_SECRET_KEY'], algorithms=envs['AUTH_ALGORITHM'])
+        return payload
+    
+    except JWTError as e:
+        print(f"Error decoding token: {e}")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+
+def validate_token(token: str = Depends(bearer_scheme)) -> None:
+    decode_jwt_token(token.credentials)
+
 
 class InitializationRequest(BaseModel):
     session_id: str = None
@@ -17,7 +35,7 @@ class ChatRequest(BaseModel):
 
 
 @app.post("/initialise")
-async def initialize_resources(request_body: InitializationRequest):
+async def initialize_resources(request_body: InitializationRequest, token: str = Depends(validate_token)):
     """
     Initialize resources.
 
@@ -57,7 +75,7 @@ async def initialize_resources(request_body: InitializationRequest):
 
 
 @app.post("/chat")
-async def chat_functionality(request_body: ChatRequest):
+async def chat_functionality(request_body: ChatRequest, token: str = Depends(validate_token)):
     """
     Implement chat functionality.
 
