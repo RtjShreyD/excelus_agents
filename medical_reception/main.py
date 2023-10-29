@@ -1,73 +1,104 @@
-from fastapi import FastAPI
-import redis
-import pika
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from fastapi.encoders import jsonable_encoder
+from lib.agent import MedicalReceptionAgent
+import uuid
 import uvicorn
 
 app = FastAPI()
+agent_instance = MedicalReceptionAgent()
 
-# Initialize Redis and RabbitMQ (pika) connections
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+class InitializationRequest(BaseModel):
+    session_id: str = None
 
-# Endpoint to initialize resources
+class ChatRequest(BaseModel):
+    session_id: str
+    human_message: str
+
+
 @app.post("/initialise")
-async def initialize_resources():
+async def initialize_resources(request_body: InitializationRequest):
     """
     Initialize resources.
-    
+
     This endpoint initializes resources.
 
+    Args:
+        request_body (InitializationRequest): JSON request body containing session_id.
+
     Returns:
-        dict: Empty dictionary.
+        dict: Response dictionary.
     """
     try:
-        # Initialize resources here
-        # ...
-        return {}
+        session_id = request_body.session_id
+
+        if not session_id:
+            session_id = str(uuid.uuid4())[:6]
+        else:
+            session_id = request_body.session_id
+       
+        agent_response = agent_instance.agent_begin(session_id)
+
+        response = {
+            "status": 201,
+            "msg": "Initialized",
+            "details": {
+                "session_id": session_id,
+                "agent_response": agent_response
+            }
+        }
+
+        return jsonable_encoder(response)
+
     except Exception as e:
-        # Handle exceptions here
-        return {}
+        print(f"Exception - {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 
-# Endpoint for chat functionality
 @app.post("/chat")
-async def chat_functionality():
+async def chat_functionality(request_body: ChatRequest):
     """
     Implement chat functionality.
-    
+
     This endpoint implements chat functionality.
 
-    Returns:
-        dict: Empty dictionary.
-    """
-    try:
-        # Implement chat functionality here
-        # ...
-        return {}
-    except Exception as e:
-        # Handle exceptions here
-        return {}
-
-
-
-# Endpoint to close resources
-@app.post("/close")
-async def close_resources():
-    """
-    Close resources.
-    
-    This endpoint closes resources.
+    Args:
+        request_body (ChatRequest): JSON request body containing session_id and human_message.
 
     Returns:
-        dict: Empty dictionary.
+        dict: Response dictionary.
     """
     try:
-        # Close resources here
-        # ...
-        return {}
+        # Extract session_id and human_message from the request body
+        session_id = request_body.session_id
+        human_message = request_body.human_message
+
+        if not session_id.strip():
+            raise HTTPException(status_code=400, detail="session_id cannot be empty")
+
+        if not human_message.strip():
+            raise HTTPException(status_code=400, detail="human_message cannot be empty")
+
+        # Mocking agent response
+        agent_response = agent_instance.agent_chat(session_id, human_message)
+
+        # Response format
+        response = {
+            "status": 200,
+            "msg": "Success",
+            "details": {
+                "session_id": session_id,
+                "agent_response": agent_response
+            }
+        }
+
+        return jsonable_encoder(response)
+
     except Exception as e:
-        # Handle exceptions here
-        return {}
+        print(f"Exception - {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
     
 
 if __name__ == "__main__":
