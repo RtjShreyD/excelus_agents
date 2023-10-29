@@ -1,37 +1,13 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, status
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
-from fastapi.security import HTTPBearer
-from jose import JWTError, jwt
 from lib.agent import MedicalReceptionAgent
-from configs.config import envs
+from core.dependencies import validate_token
+from core.validators import InitializationRequest, ChatRequest
 import uuid
 import uvicorn
 
 app = FastAPI()
-bearer_scheme = HTTPBearer()
 agent_instance = MedicalReceptionAgent()
-
-def decode_jwt_token(token: str) -> dict:
-    try:
-        payload = jwt.decode(token, envs['AUTH_SECRET_KEY'], algorithms=envs['AUTH_ALGORITHM'])
-        return payload
-    
-    except JWTError as e:
-        print(f"Error decoding token: {e}")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-
-
-def validate_token(token: str = Depends(bearer_scheme)) -> None:
-    decode_jwt_token(token.credentials)
-
-
-class InitializationRequest(BaseModel):
-    session_id: str = None
-
-class ChatRequest(BaseModel):
-    session_id: str
-    human_message: str
 
 
 @app.post("/initialise")
