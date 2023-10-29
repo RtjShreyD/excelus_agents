@@ -1,0 +1,34 @@
+{
+    "agent_details": {
+        "agent_name": "Uday",
+        "hospital_name": "Surya Hospital",
+        "today_date": "2023-10-27",
+        "day_of_week": "Friday",
+        "hospital_address": "123 Main St, City, Country",
+        "hospital_phone": "123-456-7890",
+        "hospital_website": "www.Suryahospital.com",
+        "agent_department": "General-Inquiry"
+    },
+    "embedding_tools": [
+        {
+            "name" : "List of the doctors",
+            "collection_name" : "names-of-doctors",
+            "description" : "useful for when you need to answer questions about the most relevant names of doctors according to their specilisation.This list of doctors belong to given medical facility only.",
+            "input_file_path" : "/home/rtj/Projects/ExcelusAi/excelus_agents/medical_reception/configs/doctors.txt"
+        },
+        {
+            "name" : "List of the Packages",
+            "collection_name" : "names-of-packages",
+            "description" : "useful when you need to answer questions about the available medical facilities(/packages) available in the given medical facility.",
+            "input_file_path" : "/home/rtj/Projects/ExcelusAi/excelus_agents/medical_reception/configs/packages.txt"
+        }
+    ],
+    "custom_functional_tools": [
+        {
+            "name": "book_appointment",
+            "function_name": "book_appointment",
+            "description": "Useful for starting appointment booking procedure. Takes a single input dictionary containing session_id, doctor_name, appointment_time, appointment_day. Make sure to convert the appointment_time to 24hr time format or HH:MM AM/PM format before calling this function. Returns booking_id, appointment_time, appointment_day, appointment_date contained in a string."
+        }
+    ]
+    
+} 
