@@ -8,8 +8,9 @@ Make sure you have the following installed on your system:
 
 - Python 3.x
 - [Redis](https://redis.io/download)
-- [RabbitMQ](https://www.rabbitmq.com/download.html) (for Celery task queue)
-- Git (optional, but recommended)
+- [Another Redis Desktop Manager] 
+<!-- - [RabbitMQ](https://www.rabbitmq.com/download.html) (for Celery task queue)
+- Git (optional, but recommended) -->
 
 ## Setup
 
@@ -43,30 +44,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Set Environment Variables
-
-#### On Windows
-
-```bash
-set OPENAI_API_KEY=openai-api-key
-set CELERY_BROKER_URL=pyamqp://<username>:<password>@<rabbitm-mq-host>:<rabbit-mq-port>/<vhostname>
-set CELERY_RESULT_BACKEND=redis://localhost:6379/0
-set REDIS_MEMORY_SERVER_URL=redis://localhost:6379/1
-set REDIS_DATA_SERVER_IP=localhost
-set REDIS_DATA_SERVER_PORT=6379
-set REDIS_DATA_SERVER_DB=2
-```
-
-#### On Linux/macOS
-
-```bash
-export OPENAI_API_KEY=openai-api-key
-export CELERY_BROKER_URL=pyamqp://<username>:<password>@<rabbitm-mq-host>:<rabbit-mq-port>/<vhostname>
-export CELERY_RESULT_BACKEND=redis://localhost:6379/0
-export REDIS_MEMORY_SERVER_URL=redis://localhost:6379/1
-export REDIS_DATA_SERVER_IP=localhost
-export REDIS_DATA_SERVER_PORT=6379
-export REDIS_DATA_SERVER_DB=2
-```
+Create a new file named .env  and copy contents from .env.example to it (Make sure you are inside the particular agents directory 'medical_reception' in this case)
 
 ### 5. Run the Server
 
