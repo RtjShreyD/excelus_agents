@@ -14,13 +14,13 @@
             "name" : "List of the doctors",
             "collection_name" : "names-of-doctors",
             "description" : "useful for when you need to answer questions about the most relevant names of doctors according to their specilisation.This list of doctors belong to given medical facility only.",
-            "input_file_path" : "/home/rtj/Projects/ExcelusAi/excelus_agents/medical_reception/configs/doctors.txt"
+            "input_file_path" : "/Users/pradhumn/personal data/excelus/excelus_agents/medical_reception/configs/doctors.txt"
         },
         {
             "name" : "List of the Packages",
             "collection_name" : "names-of-packages",
             "description" : "useful when you need to answer questions about the available medical facilities(/packages) available in the given medical facility.",
-            "input_file_path" : "/home/rtj/Projects/ExcelusAi/excelus_agents/medical_reception/configs/packages.txt"
+            "input_file_path" : "/Users/pradhumn/personal data/excelus/excelus_agents/medical_reception/configs/doctors.txt"
         }
     ],
     "custom_functional_tools": [
