@@ -12,7 +12,7 @@ Make sure you have the following installed on your system:
 <!-- - [RabbitMQ](https://www.rabbitmq.com/download.html) (for Celery task queue)
 - Git (optional, but recommended) -->
 
-## Setup
+## Setup (Dev environment)
 
 ### 1. Clone the Repository
 
@@ -44,13 +44,35 @@ pip install -r requirements.txt
 ```
 
 ### 4. Set Environment Variables
-Create a new file named .env  and copy contents from .env.example to it (Make sure you are inside the particular agents directory 'medical_reception' in this case)
+Create a new .env file in the 'medical_reception' directory, copy the contents from .env.example to it, and edit the .env file to provide necessary environment variables like AUTH_SECRET_KEY, OPENAI_API_KEY, and other configuration options.
 
 ### 5. Run the Server
 
 ```bash
 uvicorn main:app --reload --port 8001
 ```
+
+
+## Setup (Docker)
+
+### 1. Clone the Repository
+
+```bash
+git clone git@github.com:RtjShreyD/excelus_agents.git
+cd excelus_agents/medical_reception
+```
+
+### 2. Set Environment Variables
+Create a new .env file in the 'medical_reception' directory, copy the contents from .env.docker-example to it, and edit the .env file to provide necessary environment variables like AUTH_SECRET_KEY, OPENAI_API_KEY, and other configuration options.
+
+### 3. Run
+`docker-compose up -d` to run the application
+`docker-compose down` to stop and remove the application containers
+
+## Access the Application
+App should be accessible at http://localhost:8001 and swagger-docs will be accessible at http://localhost:8001/docs
+
+NOTE - This also starts an inbuilt Redis server available to connect on `redis://localhost:6380` on the host-machine
 
 ## Routes
 
