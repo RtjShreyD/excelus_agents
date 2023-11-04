@@ -1,76 +1,71 @@
+import datetime
+import logging
 from langchain.agents import initialize_agent
 from lib.objects import llm
 from lib.tools import create_toolkit
 from langchain.memory.chat_message_histories.redis import RedisChatMessageHistory
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from configs.config import envs, load_base_prompt
-from datetime import datetime
+from configs.config import envs, load_base_prompt, agent_config
 
-
-class MedicalReceptionAgent():
+class MedicalReceptionAgent:
     def __init__(self):
-        self.agent_chain = self.initialise_base_agent()
+        self.agent_chain = self.initialize_base_agent()
         self.base_prompt = load_base_prompt()
 
-    def initialise_base_agent(self):
-        print("Initialising memoryless base agent...Creating toolkit chain...")
-        
+    def initialize_base_agent(self):
+        logging.info("Initializing memoryless base agent...Creating toolkit chain")
         toolkit = create_toolkit()
-        print("Initialised toolkit")
-        
+        logging.info("Initialized toolkit")
         agent_chain = initialize_agent(
-            toolkit, 
-            llm, 
+            toolkit,
+            llm,
             agent="conversational-react-description",
-            memory=None, 
-            verbose=True
+            memory=None,
+            verbose=agent_config['agent_attributes']['verbose_mode']
         )
-        print("Initialised base agent")
-        
+        logging.info("Initialized base agent")
         return agent_chain
-    
+
+    def _assign_memory(self, session_id):
+        chat_history = RedisChatMessageHistory(
+            url=envs['REDIS_MEMORY_SERVER_URL'],
+            ttl=600,
+            session_id=session_id
+        )
+        chat_history.add_user_message(
+            f"session_id - {session_id}, today's date - {datetime.today().strftime('%Y-%m-%d')}, day of the week - {datetime.today().strftime('%A')}"
+        )
+        memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=chat_history)
+        self.agent_chain.memory = memory
+        return chat_history, memory
+
+    def _release_memory(self):
+        self.agent_chain.memory = None
 
     def agent_begin(self, session_id):
-        print("Initialising agent session for session_id: " + str(session_id))
-        today_date = datetime.today().strftime('%Y-%m-%d')
-        day_of_week = datetime.today().strftime('%A')
+        logging.info("Initializing agent session for session_id: " + str(session_id))
+        chat_history, memory = self._assign_memory(session_id)
 
-        chat_history = RedisChatMessageHistory(
-            url=envs['REDIS_MEMORY_SERVER_URL'], 
-            ttl=600, 
-            session_id=session_id
-        )
-        chat_history.add_user_message(f"session_id - {session_id}, today's date - {today_date}, day of the week - {day_of_week}")
-
-        memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=chat_history)
-        self.agent_chain.memory = memory
-
-        print("Assigned dynamic memory to agent chain.....running base_chain")
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        logging.info("Assigned dynamic memory to agent chain...running base_chain")
+        logging.info(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         agent_begin_resp = self.agent_chain.run(input=self.base_prompt)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN END >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        self.agent_chain.memory = None
-        print("Agent memory released")
+        logging.info(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN END >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+        self._release_memory()
+        chat_history.close()
+        logging.info("Agent memory released")
         return agent_begin_resp
 
-        
     def agent_chat(self, session_id, message):
-        chat_history = RedisChatMessageHistory(
-            url=envs['REDIS_MEMORY_SERVER_URL'], 
-            ttl=600, 
-            session_id=session_id
-        )
+        logging.info("Initializing agent chat for session_id: " + str(session_id))
+        chat_history, memory = self._assign_memory(session_id)
 
-        memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=chat_history)
-        self.agent_chain.memory = memory
-        print("Assigned dynamic memory to agent chain.....running base_chain")
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        logging.info("Assigned dynamic memory to agent chain...running base_chain")
+        logging.info(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
         agent_chat_resp = self.agent_chain.run(input=message)
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN END >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        self.agent_chain.memory = None
-        print("Agent memory released")
+        logging.info(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN END >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+        self._release_memory()
+        chat_history.close()
+        logging.info("Agent memory released")
         return agent_chat_resp
-
-        
-        
-

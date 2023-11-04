@@ -29,6 +29,9 @@
             "function_name": "book_appointment",
             "description": "Useful for starting appointment booking procedure. Takes a single input dictionary containing session_id, doctor_name, appointment_time, appointment_day. Make sure to convert the appointment_time to 24hr time format or HH:MM AM/PM format before calling this function. Returns booking_id, appointment_time, appointment_day, appointment_date contained in a string."
         }
-    ]
-    
+    ],
+    "agent_attributes": {
+        "model_name": "gpt-4",
+        "verbose_mode": true
+    }
 } 
