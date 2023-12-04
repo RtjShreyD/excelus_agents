@@ -47,8 +47,8 @@ def book_appointment(input_data):
             appointment_day = today.strftime("%A")
         
         # Calculate the appointment_date based on today's date and the appointment_day
-        days_ahead = (datetime.strptime(appointment_day, "%A").weekday() - datetime.now().weekday()) % 7
-        appointment_date = (datetime.now() + timedelta(days=days_ahead)).strftime("%Y-%m-%d")
+        # days_ahead = (datetime.strptime(appointment_day, "%A").weekday() - datetime.now().weekday()) % 7
+        # appointment_date = (datetime.now() + timedelta(days=days_ahead)).strftime("%Y-%m-%d")
         
         # Generate a random 4-digit number for booking ID
         booking_id = random.randint(1000, 9999)
@@ -56,16 +56,18 @@ def book_appointment(input_data):
         # Store appointment information in Redis
         appointment_info = {
             "session_id": session_id,
-            "doctor_name": doctor_name,
-            "appointment_time": appointment_time,
-            "appointment_date": appointment_date,
-            "booking_no": booking_id
+            # "doctor_name": doctor_name,
+            # "appointment_time": appointment_time,
+            # "appointment_date": appointment_date,
+            "booking_no": booking_id,
+            "exact_input" : str(input_data),
+            "booking_timestamp" : str(datetime.now().strftime("%Y-%m-%d"))
         }
         redis_key = f"{session_id}_booking_info"
         json_data = json.dumps(appointment_info)
         redis_client.set(redis_key, json_data)
         
-        return f"Appointment scheduled, booking_id is {booking_id}, date is {appointment_date}, time is {appointment_time}"
+        return f"Appointment scheduled, booking_id is {booking_id}."
     
     except ValueError as e:
         return str(e) + ", please confirm the details from the user and try again later"
