@@ -67,9 +67,8 @@ class InfoHandler:
             return None
     
 
-    def check_and_get_response(self, task_id):
+    def check_response(self, task_id):
         resp = self.get_task_result(task_id)
-        error = resp.get('error')
         if resp is not None:
             status = resp.get('status')
             if status == True:
