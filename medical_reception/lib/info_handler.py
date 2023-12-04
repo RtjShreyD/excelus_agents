@@ -1,5 +1,30 @@
 import redis
+import random
+from celery.result import AsyncResult
 from configs.config import envs
+
+processing_messages = [
+    "Thank you. Processing your request.",
+    "We're on it. Will update you soon.",
+    "Your query is being handled. Thanks!",
+    "Processing your request. Thank you!",
+    "Thanks for reaching out. Processing now."
+]
+
+failure_messages = [
+    "Apologies. Something went wrong. We're investigating.",
+    "We encountered an issue. Our team is on it.",
+    "Sorry, there was an error. We're working to fix it.",
+    "Oops! An error occurred. We're addressing it now.",
+    "We apologize for the inconvenience. Our team is resolving the issue."
+]
+
+def get_random_processing_message():
+    return random.choice(processing_messages)
+
+def get_random_failure_message():
+    return random.choice(failure_messages)
+
 
 class InfoHandler:
     def __init__(self):
@@ -25,5 +50,37 @@ class InfoHandler:
         redis_conn = self._get_redis_connection('MEMORY_SERVER')
         key = f'message_store:{session_id}'
         
-        # Check if the key exists in the message_store
         return redis_conn.exists(key)
+    
+
+    def get_task_result(self, task_id):
+        try:
+            result = AsyncResult(task_id)
+            if result.ready():
+                return result.result
+            else:
+                return None
+        except Exception as e:
+            print(f"Error retrieving task result for {task_id}: {e}")
+            return None
+    
+
+    def check_and_get_response(self, task_id):
+        resp = self.get_task_result(task_id)
+        error = resp.get('error')
+        if resp is not None:
+            status = resp.get('status')
+            if status == True:
+                print("Status: %s" % status)
+                agent_response = resp.get('agent_resp')
+                
+            else:
+                print("Status: %s" % status)
+                if error == True:
+                    agent_response = "Some error occurred. Please try again in sometime."
+                else:
+                    agent_response = get_random_processing_message()
+        else:
+            agent_response = get_random_processing_message()
+
+        return agent_response

@@ -26,7 +26,6 @@ input = {
     'query' : ""
 }
 
-
 '''
 
 @app.task
@@ -34,15 +33,12 @@ def operator(inputs):
     try:
         session_id = inputs.get("session_id")
         log.info("Operating - " + session_id)
-        
         time.sleep(30)
-        
         log.info("Operation completed successfully")
         return True
     
     except Exception as e:
         log.error("Error executing operation - " + str(e))
-        
         return False
 
 
@@ -75,6 +71,7 @@ def ask_agent(inputs):
             log.warning("Session ID not registered - Aborting...")
             result = {
                 'status': False,
+                'error' : False,
                 'session_id': "",
                 'msg' : "Session ID not registered - Aborting...",
                 'agent_resp' : ""
@@ -86,11 +83,12 @@ def ask_agent(inputs):
 
         agent_response = agent_instance.agent_chat(session_id, query)
         result = {
-                'status': True,
-                'session_id': session_id,
-                'msg' : "OK",
-                'agent_resp' : agent_response
-            }
+            'status': True,
+            'error': False,
+            'session_id': session_id,
+            'msg' : "OK",
+            'agent_resp' : agent_response
+        }
         
         log.info("Agent Operation completed")
         return result
@@ -99,6 +97,7 @@ def ask_agent(inputs):
         log.error("Error executing operation - " + str(e))
         result = {
                 'status': False,
+                'error' : True,
                 'session_id': "",
                 'msg' : f"Error - {str(e)}",
                 'agent_resp' : ""
