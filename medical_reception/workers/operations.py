@@ -52,21 +52,13 @@ def ask_agent(inputs):
     try:
         log.info("Ask agent Activated...")
 
-        time.sleep(3000)
+        time.sleep(60)
 
         session_id = inputs.get("session_id")
         call_sid = inputs.get("call_sid", "")
         query = inputs.get("query")
 
-        if not session_id:
-            log.warning("Session ID not specified - Aborting...")
-            result = {
-                'status': False,
-                'session_id': "",
-                'msg' : "Session ID not specified - Aborting...",
-                'agent_resp' : ""
-            }
-            return result
+        
         
         is_registered = info_handler.is_registered_session(session_id)
         if not is_registered:
