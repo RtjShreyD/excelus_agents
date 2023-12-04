@@ -5,13 +5,28 @@ from core.dependencies import validate_token
 from core.validators import InitializationRequest, ChatRequest
 import uuid
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 agent_instance = MedicalReceptionAgent()
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "*"
+    ],  # Set this to the appropriate origins in your production environment
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.post("/initialise")
-async def initialize_resources(request_body: InitializationRequest, token: str = Depends(validate_token)):
+async def initialize_resources(
+    request_body: InitializationRequest, token: str = Depends(validate_token)
+):
     """
     Initialize resources.
 
@@ -30,16 +45,13 @@ async def initialize_resources(request_body: InitializationRequest, token: str =
             session_id = str(uuid.uuid4())[:6]
         else:
             session_id = request_body.session_id
-       
+
         agent_response = agent_instance.agent_begin(session_id)
 
         response = {
             "status": 201,
             "msg": "Initialized",
-            "details": {
-                "session_id": session_id,
-                "agent_response": agent_response
-            }
+            "details": {"session_id": session_id, "agent_response": agent_response},
         }
 
         return jsonable_encoder(response)
@@ -49,9 +61,10 @@ async def initialize_resources(request_body: InitializationRequest, token: str =
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-
 @app.post("/chat")
-async def chat_functionality(request_body: ChatRequest, token: str = Depends(validate_token)):
+async def chat_functionality(
+    request_body: ChatRequest, token: str = Depends(validate_token)
+):
     """
     Implement chat functionality.
 
@@ -81,10 +94,7 @@ async def chat_functionality(request_body: ChatRequest, token: str = Depends(val
         response = {
             "status": 200,
             "msg": "Success",
-            "details": {
-                "session_id": session_id,
-                "agent_response": agent_response
-            }
+            "details": {"session_id": session_id, "agent_response": agent_response},
         }
 
         return jsonable_encoder(response)
@@ -93,7 +103,6 @@ async def chat_functionality(request_body: ChatRequest, token: str = Depends(val
         print(f"Exception - {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-    
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
