@@ -37,7 +37,7 @@ class MedicalReceptionAgent():
 
         chat_history = RedisChatMessageHistory(
             url=envs['REDIS_MEMORY_SERVER_URL'], 
-            ttl=600, 
+            ttl=21600, # 6hrs 
             session_id=session_id
         )
         chat_history.add_user_message(f"session_id - {session_id}, today's date - {today_date}, day of the week - {day_of_week}")
@@ -57,7 +57,7 @@ class MedicalReceptionAgent():
     def agent_chat(self, session_id, message):
         chat_history = RedisChatMessageHistory(
             url=envs['REDIS_MEMORY_SERVER_URL'], 
-            ttl=600, 
+            ttl=21600, 
             session_id=session_id
         )
 

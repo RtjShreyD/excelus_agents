@@ -42,6 +42,7 @@ def load_env_config():
         "REDIS_DATA_SERVER_PORT" : os.getenv('REDIS_DATA_SERVER_PORT'),
         "REDIS_DATA_SERVER_DB" : os.getenv('REDIS_DATA_SERVER_DB')
     }
+    envs["REDIS_DATA_SERVER_URL"] = "redis://" + envs["REDIS_DATA_SERVER_IP"] + ":" + envs["REDIS_DATA_SERVER_PORT"] + "/" + envs["REDIS_DATA_SERVER_DB"]
     return envs
 
 

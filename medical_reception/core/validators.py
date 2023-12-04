@@ -6,3 +6,7 @@ class InitializationRequest(BaseModel):
 class ChatRequest(BaseModel):
     session_id: str
     human_message: str
+
+class MessageRequest(BaseModel):
+    session_id: str
+    query: str
