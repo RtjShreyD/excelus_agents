@@ -57,8 +57,10 @@ class InfoHandler:
         try:
             result = AsyncResult(task_id)
             if result.ready():
+                print("Worker has finished the task")
                 return result.result
             else:
+                print("Worker has not picked up the task, or task is in progress")
                 return None
         except Exception as e:
             print(f"Error retrieving task result for {task_id}: {e}")
@@ -76,10 +78,8 @@ class InfoHandler:
                 
             else:
                 print("Status: %s" % status)
-                if error == True:
-                    agent_response = "Some error occurred. Please try again in sometime."
-                else:
-                    agent_response = get_random_processing_message()
+                agent_response = get_random_failure_message()
+                
         else:
             agent_response = get_random_processing_message()
 

@@ -52,6 +52,8 @@ def ask_agent(inputs):
     try:
         log.info("Ask agent Activated...")
 
+        time.sleep(3000)
+
         session_id = inputs.get("session_id")
         call_sid = inputs.get("call_sid", "")
         query = inputs.get("query")
