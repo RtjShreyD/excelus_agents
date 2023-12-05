@@ -68,12 +68,14 @@ class InfoHandler:
     
 
     def check_response(self, task_id):
+        resp_status = False
         resp = self.get_task_result(task_id)
         if resp is not None:
             status = resp.get('status')
             if status == True:
                 print("Status: %s" % status)
                 agent_response = resp.get('agent_resp')
+                resp_status = True
                 
             else:
                 print("Status: %s" % status)
@@ -82,4 +84,4 @@ class InfoHandler:
         else:
             agent_response = get_random_processing_message()
 
-        return agent_response
+        return agent_response, resp_status
