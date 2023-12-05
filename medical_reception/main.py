@@ -188,11 +188,11 @@ async def check_task(session_id: str, task_id: str, token: str = Depends(validat
     - **details**: Additional details, including session_id, task_id, and agent_response.
     """
     try:
-        agent_resp = info_handler.check_response(task_id)
+        agent_resp, resp_status = info_handler.check_response(task_id)
         response = {
                     "status": 200,
                     "msg": "Success",
-                    "details": {"session_id": session_id, "task_id": task_id, "agent_response": agent_resp},
+                    "details": {"session_id": session_id, "task_id": task_id, "agent_response": agent_resp, "agent_resp_status" : resp_status}
                 }
         
         return jsonable_encoder(response)
