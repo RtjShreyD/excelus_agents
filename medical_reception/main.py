@@ -6,15 +6,15 @@ from core.validators import InitializationRequest, ChatRequest, MessageRequest
 import uuid
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from lib.info_handler import InfoHandler
-from workers.operations import ask_agent
+# from lib.info_handler import InfoHandler
+# from workers.operations import ask_agent
 # import logging
 
 # log = logging.getLogger(__name__)
 
 app = FastAPI()
 agent_instance = MedicalReceptionAgent()
-info_handler = InfoHandler()
+# info_handler = InfoHandler()
 
 # Add CORS middleware
 app.add_middleware(
@@ -110,91 +110,172 @@ async def chat_functionality(
 
 
 
-@app.post("/process_query")
-async def chat_functionality(
-    request_body: MessageRequest, token: str = Depends(validate_token)
+# @app.post("/process_query")
+# async def chat_functionality(
+#     request_body: MessageRequest, token: str = Depends(validate_token)
+# ):
+#     """
+#     Process a chat query and initiate a Celery task.
+
+#     - **session_id**: Unique identifier for the session.
+#     - **query**: The chat query to be processed.
+
+#     Returns:
+#     - **status**: HTTP status code.
+#     - **msg**: Message indicating success or failure.
+#     - **details**: Additional details, including session_id and task_id.
+#     """
+#     try:
+#         print("Started")
+#         session_id = request_body.session_id
+#         query = request_body.query
+
+#         print(session_id, query)
+
+#         if not session_id:
+#             print("Session ID not specified - Aborting...")
+#             response = {
+#                 "status": 400,
+#                 "msg": "Failure - Session ID not specified - Aborting...",
+#                 "details": {},
+#             }
+#             return jsonable_encoder(response)
+        
+#         else:
+#             is_registered = info_handler.is_registered_session(session_id)
+#             if not is_registered:
+#                 print("Session ID not registered - Aborting...")
+#                 response = {
+#                     "status": 401,
+#                     "msg": "Failure - Session ID not registered - Aborting...",
+#                     "details": {},
+#                 }
+#                 return jsonable_encoder(response)
+            
+#             else:
+#                 print("Is registered")
+#                 input_obj = {
+#                     'session_id': session_id,
+#                     'query' : query,
+#                 }
+#                 task = ask_agent.apply_async(args=[input_obj], countdown=0)
+
+#                 response = {
+#                     "status": 200,
+#                     "msg": "Success",
+#                     "details": {"session_id": session_id, "task_id": task.id}
+#                 }
+#                 print(task)
+
+#                 return jsonable_encoder(response)
+
+#     except Exception as e:
+#         print(f"Exception - {str(e)}")
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+# @app.get("/check_reponse/{session_id}/{task_id}")
+# async def check_task(session_id: str, task_id: str, token: str = Depends(validate_token)):
+#     """
+#     Check the response of a Celery task.
+
+#     - **session_id**: Unique identifier for the session.
+#     - **task_id**: Unique identifier for the Celery task.
+
+#     Returns:
+#     - **status**: HTTP status code.
+#     - **msg**: Message indicating success or failure.
+#     - **details**: Additional details, including session_id, task_id, and agent_response.
+#     """
+#     try:
+#         agent_resp = info_handler.check_response(task_id)
+#         response = {
+#                     "status": 200,
+#                     "msg": "Success",
+#                     "details": {"session_id": session_id, "task_id": task_id, "agent_response": agent_resp},
+#                 }
+        
+#         return jsonable_encoder(response)
+
+#     except Exception as e:
+#         print(f"Exception - {str(e)}")
+#         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+
+@app.post("/mock/initialise")
+async def initialize_resources(
+    request_body: InitializationRequest, token: str = Depends(validate_token)
 ):
     """
-    Process a chat query and initiate a Celery task.
+    Initialize resources.
 
-    - **session_id**: Unique identifier for the session.
-    - **query**: The chat query to be processed.
+    This endpoint initializes resources.
+
+    Args:
+        request_body (InitializationRequest): JSON request body containing session_id.
 
     Returns:
-    - **status**: HTTP status code.
-    - **msg**: Message indicating success or failure.
-    - **details**: Additional details, including session_id and task_id.
+        dict: Response dictionary.
     """
     try:
-        print("Started")
         session_id = request_body.session_id
-        query = request_body.query
-
-        print(session_id, query)
 
         if not session_id:
-            print("Session ID not specified - Aborting...")
-            response = {
-                "status": 400,
-                "msg": "Failure - Session ID not specified - Aborting...",
-                "details": {},
-            }
-            return jsonable_encoder(response)
-        
+            session_id = str(uuid.uuid4())[:6]
         else:
-            is_registered = info_handler.is_registered_session(session_id)
-            if not is_registered:
-                print("Session ID not registered - Aborting...")
-                response = {
-                    "status": 401,
-                    "msg": "Failure - Session ID not registered - Aborting...",
-                    "details": {},
-                }
-                return jsonable_encoder(response)
-            
-            else:
-                print("Is registered")
-                input_obj = {
-                    'session_id': session_id,
-                    'query' : query,
-                }
-                task = ask_agent.apply_async(args=[input_obj], countdown=0)
+            session_id = request_body.session_id
 
-                response = {
-                    "status": 200,
-                    "msg": "Success",
-                    "details": {"session_id": session_id, "task_id": task.id}
-                }
-                print(task)
+        agent_response = agent_instance.agent_begin(session_id, example=True)
 
-                return jsonable_encoder(response)
+        response = {
+            "status": 201,
+            "msg": "Initialized",
+            "details": {"session_id": session_id, "agent_response": agent_response},
+        }
+
+        return jsonable_encoder(response)
 
     except Exception as e:
         print(f"Exception - {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.get("/check_reponse/{session_id}/{task_id}")
-async def check_task(session_id: str, task_id: str, token: str = Depends(validate_token)):
+@app.post("/mock/chat")
+async def chat_functionality(
+    request_body: ChatRequest, token: str = Depends(validate_token)
+):
     """
-    Check the response of a Celery task.
+    Implement chat functionality.
 
-    - **session_id**: Unique identifier for the session.
-    - **task_id**: Unique identifier for the Celery task.
+    This endpoint implements chat functionality.
+
+    Args:
+        request_body (ChatRequest): JSON request body containing session_id and human_message.
 
     Returns:
-    - **status**: HTTP status code.
-    - **msg**: Message indicating success or failure.
-    - **details**: Additional details, including session_id, task_id, and agent_response.
+        dict: Response dictionary.
     """
     try:
-        agent_resp = info_handler.check_response(task_id)
+        # Extract session_id and human_message from the request body
+        session_id = request_body.session_id
+        human_message = request_body.human_message
+
+        if not session_id.strip():
+            raise HTTPException(status_code=400, detail="session_id cannot be empty")
+
+        if not human_message.strip():
+            raise HTTPException(status_code=400, detail="human_message cannot be empty")
+
+        # Mocking agent response
+        agent_response = agent_instance.agent_chat(session_id, human_message, example=True)
+
+        # Response format
         response = {
-                    "status": 200,
-                    "msg": "Success",
-                    "details": {"session_id": session_id, "task_id": task_id, "agent_response": agent_resp},
-                }
-        
+            "status": 200,
+            "msg": "Success",
+            "details": {"session_id": session_id, "agent_response": agent_response},
+        }
+
         return jsonable_encoder(response)
 
     except Exception as e:

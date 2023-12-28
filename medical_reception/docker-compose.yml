@@ -25,27 +25,27 @@ services:
       - .:/app
 
   
-  agent_worker_1:
-    build: .
-    container_name: agent_worker_1
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    env_file:
-      - .env
-    command: celery --app workers.operations.app worker --loglevel=info
-    volumes:
-      - .:/app
+  # agent_worker_1:
+  #   build: .
+  #   container_name: agent_worker_1
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   env_file:
+  #     - .env
+  #   command: celery --app workers.operations.app worker --loglevel=info
+  #   volumes:
+  #     - .:/app
 
-  agent_worker_2:
-    build: .
-    container_name: agent_worker_2
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    env_file:
-      - .env
-    command: celery --app workers.operations.app worker --loglevel=info
-    volumes:
-      - .:/app
+  # agent_worker_2:
+  #   build: .
+  #   container_name: agent_worker_2
+  #   extra_hosts:
+  #     - "host.docker.internal:host-gateway"
+  #   env_file:
+  #     - .env
+  #   command: celery --app workers.operations.app worker --loglevel=info
+  #   volumes:
+  #     - .:/app
 
 volumes:
   redis_data:
