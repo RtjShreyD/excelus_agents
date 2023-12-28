@@ -207,9 +207,9 @@ async def initialize_resources(
     request_body: InitializationRequest, token: str = Depends(validate_token)
 ):
     """
-    Initialize resources.
+    MOCK Initialize resources.
 
-    This endpoint initializes resources.
+    This endpoint MOCK initializes resources.
 
     Args:
         request_body (InitializationRequest): JSON request body containing session_id.
@@ -245,9 +245,9 @@ async def chat_functionality(
     request_body: ChatRequest, token: str = Depends(validate_token)
 ):
     """
-    Implement chat functionality.
+    Implement MOCK chat functionality.
 
-    This endpoint implements chat functionality.
+    This endpoint implements MOCK chat functionality.
 
     Args:
         request_body (ChatRequest): JSON request body containing session_id and human_message.
