@@ -51,37 +51,3 @@ class InfoHandler:
         key = f'message_store:{session_id}'
         
         return redis_conn.exists(key)
-    
-
-    def get_task_result(self, task_id):
-        try:
-            result = AsyncResult(task_id)
-            if result.ready():
-                print("Worker has finished the task")
-                return result.result
-            else:
-                print("Worker has not picked up the task, or task is in progress")
-                return None
-        except Exception as e:
-            print(f"Error retrieving task result for {task_id}: {e}")
-            return None
-    
-
-    def check_response(self, task_id):
-        resp_status = False
-        resp = self.get_task_result(task_id)
-        if resp is not None:
-            status = resp.get('status')
-            if status == True:
-                print("Status: %s" % status)
-                agent_response = resp.get('agent_resp')
-                resp_status = True
-                
-            else:
-                print("Status: %s" % status)
-                agent_response = get_random_failure_message()
-                
-        else:
-            agent_response = get_random_processing_message()
-
-        return agent_response, resp_status
