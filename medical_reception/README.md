@@ -1,16 +1,17 @@
 # MedicalReceptionAgent with langchain
 
-Project description goes here.
+This medical reception agent is capable of providing information about the doctors available in its deployed faility based on patient queries, symptoms, etc. This agent is also able to book doctor appointments and give suggestions about available general treatment packages.
 
 ## Prerequisites
 
-Make sure you have the following installed on your system:
+Make sure you have the following prerequisites:
 
 - Python 3.x
-- [Redis](https://redis.io/download)
-- [Another Redis Desktop Manager] 
-<!-- - [RabbitMQ](https://www.rabbitmq.com/download.html) (for Celery task queue)
-- Git (optional, but recommended) -->
+- [Redis](https://redis.io/download) Installed on your system
+- [Another Redis Desktop Manager] for inferncing the agent memory data
+- OpenAI API key for Gpt-4
+
+** NOTE - This chatbot backend currently uses OpenAI API key with gpt-4 LLM currently, to add support for gpt-3.5 some workaround, related to parsing embedding data and using Pydantic validation is required. **
 
 ## Setup (Dev environment)
 

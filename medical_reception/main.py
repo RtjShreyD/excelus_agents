@@ -25,7 +25,7 @@ app.add_middleware(
 
 @app.post("/initialise")
 async def initialize_resources(
-    request_body: InitializationRequest, token: str = Depends(validate_token)
+    request_body: InitializationRequest
 ):
     """
     Initialize resources.
@@ -63,7 +63,7 @@ async def initialize_resources(
 
 @app.post("/chat")
 async def chat_functionality(
-    request_body: ChatRequest, token: str = Depends(validate_token)
+    request_body: ChatRequest
 ):
     """
     Implement chat functionality.
