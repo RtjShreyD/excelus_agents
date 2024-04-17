@@ -23,7 +23,9 @@ class MedicalReceptionAgent():
             llm, 
             agent="conversational-react-description",
             memory=None, 
-            verbose=True
+            verbose=True,
+            handle_parsing_errors=True,     # for handling parsing errors, used with gpt-3.5-turbo
+            maximum_execution_time=3,
         )
         print("Initialised base agent")
         
