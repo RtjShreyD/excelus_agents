@@ -9,23 +9,86 @@ from datetime import datetime
 
 class MedicalReceptionAgent():
     def __init__(self):
+        self.toolkit = create_toolkit()
         self.agent_chain = self.initialise_base_agent()
+        self.agent_stream_chain = self.initialise_base_agent_stream()
         self.base_prompt = load_base_prompt()
+        
+        print("Initialised toolkit")
+
+    
+    def initialise_base_agent_stream(self):
+        print("Initialising memoryless base agent with streaming...Creating toolkit chain...")
+        
+        agent_chain = initialize_agent(
+            self.toolkit, 
+            llm, 
+            agent="conversational-react-description",
+            memory=None, 
+            verbose=True,
+            handle_parsing_errors="Do not run into Could not parse LLM output: `Do I need to use a tool?` loop more that two times.Also handle other errors.",     # for handling parsing errors, used with gpt-3.5-turbo
+            maximum_execution_time=2,
+            streaming=True
+        )
+        print("Initialised base agent")
+        
+        return agent_chain
+    
+
+    def agent_begin_stream(self, session_id):
+        print("Initialising agent session for session_id: " + str(session_id))
+        today_date = datetime.today().strftime('%Y-%m-%d')
+        day_of_week = datetime.today().strftime('%A')
+
+        chat_history = RedisChatMessageHistory(
+            url=envs['REDIS_MEMORY_SERVER_URL'], 
+            ttl=21600,
+            session_id=session_id
+        )
+        chat_history.add_user_message(f"session_id - {session_id}, today's date - {today_date}, day of the week - {day_of_week}")
+
+        memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=chat_history)
+        self.agent_chain.memory = memory
+
+        print("Assigned dynamic memory to agent chain.....running base_chain")
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+        for chunk in self.agent_chain.run(self.base_prompt):
+            yield chunk
+        
+        self.agent_chain.memory = None
+        print("\nAgent memory released")
+
+    
+    def agent_chat_stream(self, session_id, message):
+        chat_history = RedisChatMessageHistory(
+            url=envs['REDIS_MEMORY_SERVER_URL'], 
+            ttl=21600, 
+            session_id=session_id
+        )
+
+        memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=chat_history)
+        self.agent_chain.memory = memory
+        print("Assigned dynamic memory to agent chain.....running base_chain")
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        for chunk in self.agent_chain.run(input=message):
+            yield chunk
+        
+        self.agent_chain.memory = None
+        print("\nAgent memory released")
+        
 
     def initialise_base_agent(self):
         print("Initialising memoryless base agent...Creating toolkit chain...")
         
-        toolkit = create_toolkit()
-        print("Initialised toolkit")
-        
         agent_chain = initialize_agent(
-            toolkit, 
+            self.toolkit, 
             llm, 
             agent="conversational-react-description",
             memory=None, 
             verbose=True,
             handle_parsing_errors=True,     # for handling parsing errors, used with gpt-3.5-turbo
-            maximum_execution_time=3,
+            maximum_execution_time=3
         )
         print("Initialised base agent")
         
