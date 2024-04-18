@@ -11,13 +11,13 @@ class MedicalReceptionAgent():
     def __init__(self):
         self.toolkit = create_toolkit()
         self.agent_chain = self.initialise_base_agent()
-        self.agent_stream_chain = self.initialise_base_agent_stream()
+        self.agent_stream_chain = self.__initialise_base_agent_stream()
         self.base_prompt = load_base_prompt()
         
         print("Initialised toolkit")
 
     
-    def initialise_base_agent_stream(self):
+    def __initialise_base_agent_stream(self):
         print("Initialising memoryless base agent with streaming...Creating toolkit chain...")
         
         agent_chain = initialize_agent(
@@ -35,7 +35,16 @@ class MedicalReceptionAgent():
         return agent_chain
     
 
-    def agent_begin_stream(self, session_id):
+    async def __run_async_chain(self, message=None):
+        if message is None:
+            for chunk in self.agent_chain.run(self.base_prompt):
+                yield chunk
+        else:
+            for chunk in self.agent_chain.run(message):
+                yield chunk
+
+
+    async def agent_begin_stream(self, session_id):
         print("Initialising agent session for session_id: " + str(session_id))
         today_date = datetime.today().strftime('%Y-%m-%d')
         day_of_week = datetime.today().strftime('%A')
@@ -53,14 +62,14 @@ class MedicalReceptionAgent():
         print("Assigned dynamic memory to agent chain.....running base_chain")
         print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
-        for chunk in self.agent_chain.run(self.base_prompt):
+        async for chunk in self.__run_async_chain():
             yield chunk
         
         self.agent_chain.memory = None
         print("\nAgent memory released")
 
     
-    def agent_chat_stream(self, session_id, message):
+    async def agent_chat_stream(self, session_id, message):
         chat_history = RedisChatMessageHistory(
             url=envs['REDIS_MEMORY_SERVER_URL'], 
             ttl=21600, 
@@ -71,7 +80,7 @@ class MedicalReceptionAgent():
         self.agent_chain.memory = memory
         print("Assigned dynamic memory to agent chain.....running base_chain")
         print(">>>>>>>>>>>>>>>>>>>>>>>>>> AGENT CHAIN START >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        for chunk in self.agent_chain.run(input=message):
+        async for chunk in self.__run_async_chain(message=message):
             yield chunk
         
         self.agent_chain.memory = None
@@ -136,6 +145,7 @@ class MedicalReceptionAgent():
         print("Agent memory released")
         return agent_chat_resp
 
-        
+
+
         
 

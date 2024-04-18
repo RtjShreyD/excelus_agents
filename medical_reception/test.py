@@ -18,11 +18,24 @@ message = "Please make my booking with any doctor at the earliest possible time 
 # print(resp)
 
 # Begin the agent streaming session
-print("Starting agent streaming session...")
-for chunk in agent_instance.agent_begin_stream(session_id):
-    print(chunk, end=' ')
+# print("Starting agent streaming session...")
+# for chunk in agent_instance.agent_begin_stream(session_id):
+#     print(chunk, end=' ')
 
-for chunk in agent_instance.agent_chat_stream(session_id, message):
-    print(chunk, end=' ')
+# for chunk in agent_instance.agent_chat_stream(session_id, message):
+#     print(chunk, end=' ')
 
-print("Agent streaming session completed.")
+# print("Agent streaming session completed.")
+
+import asyncio
+
+async def test_agent_begin_stream():
+    # Create an instance of your class containing agent_begin_stream method
+    # For example:
+
+    # Call the agent_begin_stream method asynchronously
+    async for chunk in agent_instance.agent_begin_stream(session_id):
+        print(chunk, end=' ')
+
+# Run the test function
+asyncio.run(test_agent_begin_stream())
