@@ -11,27 +11,26 @@
     },
     "embedding_tools": [
         {
-            "name" : "List of the doctors",
-            "collection_name" : "names-of-doctors",
-            "description" : "useful for when you need to answer questions about the most relevant names of doctors according to their specilisation.This list of doctors belong to given medical facility only.",
-            "input_file_path" : "external_media/doctors.txt"
+            "name": "List of the doctors",
+            "collection_name": "names-of-doctors",
+            "description": "useful for when you need to answer questions about the most relevant names of doctors according to their specilisation.This list of doctors belong to given medical facility only.",
+            "input_file_path": "external_media/doctors.txt"
         },
         {
-            "name" : "List of the Packages",
-            "collection_name" : "names-of-packages",
-            "description" : "useful when you need to answer questions about the available medical facilities(/packages) available in the given medical facility.",
-            "input_file_path" : "external_media/packages.txt"
+            "name": "List of the Packages",
+            "collection_name": "names-of-packages",
+            "description": "useful when you need to answer questions about the available medical facilities(/packages) available in the given medical facility.",
+            "input_file_path": "external_media/packages.txt"
         }
     ],
     "custom_functional_tools": [
         {
             "name": "book_appointment",
             "function_name": "book_appointment",
-            "description": "Useful for starting appointment booking procedure. Takes a single input dictionary containing session_id, doctor_name, appointment_time, appointment_day. Make sure to convert the appointment_time to 24hr time format or HH:MM AM/PM format before calling this function. Returns booking_id, appointment_time, appointment_day, appointment_date contained in a string."
+            "description": "Useful for starting appointment booking procedure. Takes a single input dictionary containing session_id, doctor_name, appointment_time, appointment_day. Returns booking_id."
         }
     ],
     "agent_attributes": {
         "model": "gpt-3.5-turbo"
     }
-    
-} 
+}

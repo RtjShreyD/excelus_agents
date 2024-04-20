@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, WebSocket
 from fastapi.encoders import jsonable_encoder
 from lib.agent import MedicalReceptionAgent
 from core.dependencies import validate_token
@@ -7,6 +7,7 @@ import uuid
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from lib.info_handler import InfoHandler
+from starlette.websockets import WebSocketDisconnect
 
 app = FastAPI()
 agent_instance = MedicalReceptionAgent()
@@ -22,8 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+active_sessions = {}
 
-@app.post("/initialise")
+
+@app.post("/api/v1/initialise")
 async def initialize_resources(
     request_body: InitializationRequest
 ):
@@ -61,7 +64,7 @@ async def initialize_resources(
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
-@app.post("/chat")
+@app.post("/api/v1/chat")
 async def chat_functionality(
     request_body: ChatRequest
 ):
@@ -102,6 +105,71 @@ async def chat_functionality(
     except Exception as e:
         print(f"Exception - {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+
+@app.websocket("/api/v2/ws_chat/{session_id}")
+async def chat_ws_endpoint(session_id: str, websocket: WebSocket):
+    """
+    WebSocket endpoint for chat.
+
+    Args:
+        session_id (str): Session ID for the chat session.
+        websocket (WebSocket): WebSocket connection object.
+
+    Returns:
+        None
+    """
+    try:
+        # Accept the WebSocket connection
+        await websocket.accept()
+
+        # If session_id is not provided by the client, generate one
+        if session_id is None:
+            session_id = str(uuid.uuid4())[:6]
+
+        # Initialize the agent and send the initial response
+        async for chunk in agent_instance.agent_begin_stream(session_id):
+            await websocket.send_text(chunk)
+
+        await websocket.send_text('@$') # Sending the @$ character after initial agent response denotes response is completed
+
+        # Store the WebSocket connection in active connections dictionary
+        if session_id not in active_sessions:
+            active_sessions[session_id] = set()
+        active_sessions[session_id].add(websocket)
+
+
+        # Exchange messages
+        while True:
+            message = await websocket.receive_text()
+            # Query the chatbot and send the response back in chunks
+            async for chunk in agent_instance.agent_chat_stream(session_id, message):
+                await websocket.send_text(chunk)
+            
+            await websocket.send_text('@$')
+
+    except WebSocketDisconnect as wsd:
+        print(f"WebSocketDisconnect: {wsd.code}")
+        # Remove the WebSocket connection from active sessions if an error occurs
+        if session_id in active_sessions:
+            active_sessions[session_id].remove(websocket)
+        await websocket.close(code=1000)  # Close WebSocket connection cleanly
+
+    except Exception as e:
+        print(f"Exception - {str(e)}")
+        # Remove the WebSocket connection from active sessions if an error occurs
+        if session_id in active_sessions:
+            active_sessions[session_id].remove(websocket)
+        await websocket.close(code=1011)  # Close WebSocket connection with error status code
+    
+    finally:
+        # Close the session if no more clients are connected
+        if session_id in active_sessions and len(active_sessions[session_id]) == 0:
+            active_sessions.pop(session_id, None)
+
+
+
 
 
 if __name__ == "__main__":

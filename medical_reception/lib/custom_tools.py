@@ -31,20 +31,20 @@ def parse_time(appointment_time):
 def book_appointment(input_data):
     try:
         input_data = json.loads(input_data)
-
-        session_id = input_data.get('session_id')
-        doctor_name = input_data.get('doctor_name')
-        appointment_time = parse_time(input_data.get('appointment_time'))
-        appointment_day = input_data.get('appointment_day')
+        print(input_data)
+        # session_id = input_data.get('session_id')
+        # doctor_name = input_data.get('doctor_name')
+        # appointment_time = parse_time(input_data.get('appointment_time'))
+        # appointment_day = input_data.get('appointment_day')
         
-        # Validate session_id, doctor_name, and appointment_time
-        if not session_id or not doctor_name or not appointment_time:
-            raise ValueError("Invalid session_id, doctor_name, or appointment_time")
+        # # Validate session_id, doctor_name, and appointment_time
+        # if not session_id or not doctor_name or not appointment_time:
+        #     raise ValueError("Invalid session_id, doctor_name, or appointment_time")
         
-        # Deduce appointment_day and appointment_date
-        if not appointment_day:
-            today = datetime.now().date()
-            appointment_day = today.strftime("%A")
+        # # Deduce appointment_day and appointment_date
+        # if not appointment_day:
+        #     today = datetime.now().date()
+        #     appointment_day = today.strftime("%A")
         
         # Calculate the appointment_date based on today's date and the appointment_day
         # days_ahead = (datetime.strptime(appointment_day, "%A").weekday() - datetime.now().weekday()) % 7
@@ -55,7 +55,7 @@ def book_appointment(input_data):
         
         # Store appointment information in Redis
         appointment_info = {
-            "session_id": session_id,
+            # "session_id": session_id,
             # "doctor_name": doctor_name,
             # "appointment_time": appointment_time,
             # "appointment_date": appointment_date,
@@ -63,9 +63,11 @@ def book_appointment(input_data):
             "exact_input" : str(input_data),
             "booking_timestamp" : str(datetime.now().strftime("%Y-%m-%d"))
         }
-        redis_key = f"{session_id}_booking_info"
+        redis_key = f"{booking_id}_booking_info"
         json_data = json.dumps(appointment_info)
-        redis_client.set(redis_key, json_data)
+
+        # redis_client.set(redis_key, json_data)
+        redis_client.sadd(redis_key, json_data)
         
         return f"Appointment scheduled, booking_id is {booking_id}."
     
